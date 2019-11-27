@@ -1,18 +1,21 @@
 # MemcacheVsRedis
 ## memcache是什么？
 和Redis类似，可以将数据存储到内存里面，是一种内存Cache。不过memcache不仅仅可以存储普通字符，还可以存储图片和视频等等。
-## memcache与redis的区别
-Redis|Memmcache
-:-|:-
-String、list、set、sorted和hash|string
-每个K最大存储量为1G|每个K最大存储量为1M
-支持持久化(RDB和AOF)|不支持持久化
 ## Memcached的特点
  - 协议简单 
  - 基于libevent的事件处理 
  - 内置内存存储方式 
  - memcached不互相通信的分布式
 ## Libevent原理简介
+## 数据类型
+  ### Redis支持String、List、Set、Sorted和Hash
+  ### Memcache支持String
+## 持久化
+  ### Redis支持RDB和AOF的持久化
+  ### Memcache不支持持久化
+## 大小
+  ### Redis的K最大存储量为1G
+  ### Memcache最大存储量为1M
 ## memcachehe和Redis过期键的策略
  ### Redis过期键的删除策略
   - 惰性删除
@@ -44,7 +47,7 @@ String、list、set、sorted和hash|string
   - 访问比较频繁的数据，安全性差的数据，丢失无所谓的数据,例如Token;
   - 数据更新，比较频繁的数据，比如用户的在线状态或者下线状态;
 
-[参考一](https://www.cnblogs.com/JavaBlackHole/p/7726195.html)
-[node-memcached](https://github.com/elbart/node-memcache#readme)
-[memcached](https://github.com/memcached/memcached)
-[参考二](https://www.jianshu.com/p/b6a710a01a6a)
+- [参考一](https://www.cnblogs.com/JavaBlackHole/p/7726195.html)
+- [node-memcached](https://github.com/elbart/node-memcache#readme)
+- [memcached](https://github.com/memcached/memcached)
+- [参考二](https://www.jianshu.com/p/b6a710a01a6a)
