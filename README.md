@@ -1,12 +1,20 @@
 # MemcacheVsRedis
 ## memcache是什么？
 和Redis类似，可以将数据存储到内存里面，是一种内存Cache。不过memcache不仅仅可以存储普通字符，还可以存储图片和视频等等。
+## Memcache和Memcached的区别
+- Memcache是一个自由和开放源代码、高性能、分配的内存对象缓存系统。由于它的工作机制是在内存中开辟一块空间，然后建立一个Hash表，Memcached自管理这些Hash表。
+- Memcache是该系统的项目名称，Memcached是该系统的主程序文件。以守护程序方式运行于一个或多个服务器中，随时接受客户端的连接操作，使用共享内存存取数据。
 ## Memcached的特点
  - 协议简单 
  - 基于libevent的事件处理 
  - 内置内存存储方式 
  - memcached不互相通信的分布式
 ## Libevent原理简介
+## Memcached如何实现分布式
+![avatar](./memcached分布式.png)
+## Memcached内存分配策略-slab 
+一个内存分配算法要考虑算法的效率，管理内存所占的空间和内存碎片的问题。
+slab能较好的规避内存碎片的问题，但也带来了一定的内存浪费，算法的效率还不错。
 ## 数据类型
   ### Redis支持String、List、Set、Sorted和Hash
   ### Memcache支持String
