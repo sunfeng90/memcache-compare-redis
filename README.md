@@ -1,20 +1,22 @@
 # MemcacheVsRedis
-## memcache是什么？
+## Memcache是什么？
 和Redis类似，可以将数据存储到内存里面，是一种内存Cache。不过memcache不仅仅可以存储普通字符，还可以存储图片和视频等等。
 ## Memcache和Memcached的区别
-- Memcache是一个自由和开放源代码、高性能、分配的内存对象缓存系统。由于它的工作机制是在内存中开辟一块空间，然后建立一个Hash表，Memcached自管理这些Hash表。
-- Memcache是该系统的项目名称，Memcached是该系统的主程序文件。以守护程序方式运行于一个或多个服务器中，随时接受客户端的连接操作，使用共享内存存取数据。
+- Memcache是一个自由和开放源代码、高性能、分配的内存对象缓存系统。用于减轻数据库负载。
+- Memcached是该系统的项目名称，Memcached是该系统的主程序文件。这里的d的英文是daemon(守护进程)，就是常驻进程的意思。以守护程序方式运行在一个或多个服务器中，随时接受客户端的连接操作，使用共享内存存取数据。
 ## Memcached的特点
  - 协议简单 
  - 基于libevent的事件处理 
  - 内置内存存储方式 
- - memcached不互相通信的分布式
-## Libevent原理简介
-## Memcached如何实现分布式
+ - memcached是不互相通信的分布式
+ 1. Libevent原理简介
+   说到事件驱动的网络库，我们也许会想到Node。Node也是基于事件驱动，异步非阻塞的。
+ 2. Memcached如何实现分布式
 ![avatar](./memcached分布式.png)
 ## Memcached内存分配策略-slab 
 一个内存分配算法要考虑算法的效率，管理内存所占的空间和内存碎片的问题。
 slab能较好的规避内存碎片的问题，但也带来了一定的内存浪费，算法的效率还不错。
+
 ## 数据类型
   ### Redis支持String、List、Set、Sorted和Hash
   ### Memcache支持String
@@ -48,6 +50,8 @@ slab能较好的规避内存碎片的问题，但也带来了一定的内存浪�
   - Redis. 返回空然后删除该键和它对应的值
  - 惰性过期算法(lazy expiration)
  - 最近最少使用算法(LRU：Least Recently Used)
+## 实操
+  - 过期键取值
 ## memcache适用场景
   - 对持久化或者数据结构要求不高的场景；
   - 存储的Key/Value大小不是非常大，毕竟Value最大是1M；
@@ -55,6 +59,8 @@ slab能较好的规避内存碎片的问题，但也带来了一定的内存浪�
   - 访问比较频繁的数据，安全性差的数据，丢失无所谓的数据,例如Token;
   - 数据更新，比较频繁的数据，比如用户的在线状态或者下线状态;
 
+## 资料
+  [Memcache官网](https://memcached.org/)
 - [参考一](https://www.cnblogs.com/JavaBlackHole/p/7726195.html)
 - [node-memcached](https://github.com/elbart/node-memcache#readme)
 - [memcached](https://github.com/memcached/memcached)
