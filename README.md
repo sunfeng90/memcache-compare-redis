@@ -3,20 +3,38 @@
 和Redis类似，可以将数据存储到内存里面，是一种内存Cache。不过memcache不仅仅可以存储普通字符，还可以存储图片和视频等等。
 ## Memcache和Memcached的区别
 - Memcache是一个自由和开放源代码、高性能、分配的内存对象缓存系统。用于减轻数据库负载。
-- Memcached是该系统的项目名称，Memcached是该系统的主程序文件。这里的d的英文是daemon(守护进程)，就是常驻进程的意思。以守护程序方式运行在一个或多个服务器中，随时接受客户端的连接操作，使用共享内存存取数据。
+- Memcached是该系统的项目名称，Memcached是该系统的主程序文件。这里的d的英文是daemon(守护进程)，就是常驻进程的意思。
+  以守护程序方式运行在一个或多个服务器中，随时接受客户端的连接操作，使用共享内存存取数据。
 ## Memcached的特点
- - 协议简单 
- - 基于libevent的事件处理 
+ - 协议简单:使用简单的基于文本的协议；
+ - 基于libevent的事件处理
+
+    1）libevent是一个程序库，他将Linux的epoll、BSD类操作系统的kqueue等时间处理功能封装成统一的接口，memcached使用libevent从而在Linux、BSD、Solaris等操作系统
+     发挥高性能；
+    2）说到epoll和kqueue，这里和NodeJs联系起来讲一下。提起NodeJs的特点，人们常常说，它是基于事件驱动，异步且非阻塞的。这里的异步非阻塞就和epoll和kqueue有关系；
+    3）与异步相对应的是同步，同步会造成阻塞，从而导致CPU得不到高效的使用。内核在进行文件I/O操作时，通过文件描述符进行管理；
+    4）内核在进行文件I/O操作时，通过文件描述符进行管理。应用程序如果需要进行I/O调用，必须先打开文件描述符，然后再根据文件描述符去实现文件的读写。
+    阻塞I/O完成整个获取数据的过程，而非阻塞I/O不带数据直接返回，要获取数据，需要通过文件描述符进行获取。
+    非阻塞I/O返回的调用的状态，不是业务层需要的数据，所以通过轮训来判断是否完成。
+    - read
+    - select
+    - poll
+    - epoll
+    - kqueue
+    ![avatar](./kqueue.png)
  - 内置内存存储方式 
  - memcached是不互相通信的分布式
- 1. Libevent原理简介
-   说到事件驱动的网络库，我们也许会想到Node。Node也是基于事件驱动，异步非阻塞的。
  2. Memcached如何实现分布式
 ![avatar](./memcached分布式.png)
+## Memcached的访问模型
+![avatar](./memcached访问模型.png)
+ 1. 应用程序输入需要写缓存的数据，例如Token；
+ 2. Memcache API输入路由算法模块，路由算法根据Key和Memcache集群服务列表得到一台服务器编号；
+ 3. 由服务器编号得到Memcache及对应的IP地址和端口号；
+ 4. API调用通信模块和指定编号的服务器通信，将数据写入该服务器，完成一次分布式缓存的写操作。
 ## Memcached内存分配策略-slab 
 一个内存分配算法要考虑算法的效率，管理内存所占的空间和内存碎片的问题。
 slab能较好的规避内存碎片的问题，但也带来了一定的内存浪费，算法的效率还不错。
-
 ## 数据类型
   ### Redis支持String、List、Set、Sorted和Hash
   ### Memcache支持String
