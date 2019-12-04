@@ -35,8 +35,12 @@
     - kqueue
     ![avatar](./kqueue.png)
     在NodeJs在0.9.0之前的版本中，它的libev模块就是模仿了libevent来实现事件轮询。在之后的版本就移除了libev模块。
- - 内置内存存储方式 
- - memcached是不互相通信的分布式
+ - 内置内存存储方式: Slab Allocation
+   ![avatar](./Slab.png)
+   Slab是按照预先规定的大小，将分配的内存分割成特定长度的块。然后将相同大小的块放在一起，形成组。
+   例如，分配内存为942BT，Slab将这个分配为3个大小为88BT的块，3个大小为112B的块，3个114B的块，
+   然后将相同大小的块放在一起。
+ - 基于客户端的分布式
  2. Memcached如何实现分布式
 ![avatar](./memcached分布式.png)
 ## Memcached的访问模型
@@ -75,21 +79,41 @@ slab能较好的规避内存碎片的问题，但也带来了一定的内存浪�
     - 数据库周期性的操作redis.c/serverCron时，就执行activeExpireCycle函数分多次遍历多个数据库，从而删除过期键.
       - 设置默认每次检查数据库的数量为16，默认每个数据库检查键的数量为20;
       - 如果实际数量比默认值小，那么就以默认值为准;
- ### memcache过期键的删除策略
+ ### memcache过期键的删除策略(LRU-Least Recently Used最近最少使用)
+   memcached内部不会监视记录是否过期，而是在查看记录的时间戳，检查记录是否过期。当memcached的内存空间不足的时候，
+   就从最近未被使用的记录中搜索，并将其空间分配给新的记录。
  ### 如果键已经过期了，Redis和memcache访问键获取的结果有什么不同？
   - memchache. 返回键对应的值然后删除该键和它对应的值。
   - Redis. 返回空然后删除该键和它对应的值
  - 惰性过期算法(lazy expiration)
  - 最近最少使用算法(LRU：Least Recently Used)
+## 安装
+ ```
+   // 安装
+   brew install libevent
+   brew install memcached
+   // 启动
+   brew services memcached start
+   // 检查是否启动成功
+   ps -ef|grep memcached
+   // 连接(默认端口 11211)
+   telnet localhost 11211 
+ ```
 ## 实操
-  - 过期键取值
-## memcache适用场景
+  - 基本数据类型的操作
+  - 设置过期键以及获取过期键的值
+  - 分布式
+## 一些注意事项
+  - Memcached单进程最大使用内存为2G；
+  - 最大30天的数据过期时间，即使设置为永久过期，也会在这个时间过期；常量REALTIME_MAXDELTA为60 * 60 * 24 * 30控制；
+  - 当个Item最大数据是1MB，超过1M数据不予存储，常量POWER_BLOCK 1048576进行控制；
+  - 最大同时连接数是200，通过conn_init()中的freetotal进行控制，最大软连接是1024；
+## Memcache适用场景
   - 对持久化或者数据结构要求不高的场景；
   - 存储的Key/Value大小不是非常大，毕竟Value最大是1M；
   - 单纯缓存，对可靠性要求不高；
   - 访问比较频繁的数据，安全性差的数据，丢失无所谓的数据,例如Token;
   - 数据更新，比较频繁的数据，比如用户的在线状态或者下线状态;
-
 ## 资料
   [Memcache官网](https://memcached.org/)
 - [参考一](https://www.cnblogs.com/JavaBlackHole/p/7726195.html)
