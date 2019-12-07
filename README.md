@@ -35,27 +35,48 @@
     - kqueue
     ![avatar](./kqueue.png)
     在NodeJs在0.9.0之前的版本中，它的libev模块就是模仿了libevent来实现事件轮询。在之后的版本就移除了libev模块。
- - 内置内存存储方式: Slab Allocation
+ - 内存的结构
+ ![avatar](./内存结构.png)
+   1. slab_class里，存放的是一组组chunk大小相同的slab;
+   2. 每个slab里面包含若干个page,page的默认大小是1M,如果slab大小是100M，就包含100个page;
+   3. 每个page里面包含若干个chunk,chunk是数据的实际存档单位,每个slab里面的chunk大小相同。
+ - 内存的分配方式
    ![avatar](./Slab.png)
    常规程序使用内存一般有两种，一种是预先分配，另外一种是动态分配。动态分配从效率的角度来讲相对来慢点，
    因为它需要实时的去分配内存使用，虽然浪费了时间，但是这样做的好处是节约了内存空间。memcached采用的
    是预先分配的原则，这样的方式是拿空间换时间来提高速度，这样做会造成内存空间得不到很好的利用。
    但是memcached采用Slab Allocation机制来解决内存碎片的问题。
    Slab是按照预先规定的大小，将分配的内存分割成特定长度的块。然后将相同大小的块放在一起，形成组。
+   默认相邻的slab内的chunk基本以1.25为比例进行增长，Memcache启动时哦可以用-f指定这个比例。
    例如，分配内存为942BT，Slab将这个分配为3个大小为88BT的块，3个大小为112B的块，3个114B的块，
    然后将相同大小的块放在一起。
  - 基于客户端的分布式
- 2. Memcached如何实现分布式
-![avatar](./memcached分布式.png)
+![avatar](./分布式原理之set.png)
+Client端通过IP地址和端口号指定Server端，将需要缓存的数据是以key-value对的形式保存在Server端。
+key的值通过hash进行转换，根据hash值把value传递对应的具体的某个Server上。
+![avatar](./分布式原理之get.png)
+1. 当需要获取对象数据时，也根据key进行。首先对key进行hash，通过获得的值可以确定它保存在了哪台Server上，
+然后再向该Server发出请求。Client端只需知道保存hash(key)的值在哪台服务器上就可以了。
+2. 当向MemCached集群存入/取出key/value时，Memcached客户端程序根据一定的算法计算存入哪台服务器，然后
+再把key/value值存入到该服务器中。也就是说，存入数据分二步走，第一步，选择服务器，第二步，存取数据。
+## 分布式算法解析
+1. 余数算法
+先求得键的整数散列值，再除以服务器台数，根据余数确定存取服务器，这种方法计算简单，高效，但在memcached服务器增加或减少时，几乎所有的缓存都会失效。
+2. 散列算法
+![avatar](./散列算法.png)
+先算出MemCached服务器的散列值，并将其分布到0到2的32次方的圆上，然后用同样的方法算出存储数据的键的散列值并映射至圆上，最后从数据映射到的位置开始顺时针查找，将数据保存到查找到的第一个服务器上，如果超过2的32次方，依然找不到服务器，就将数据保存到第一台MemCached服务器上。如果添加了一台MemCached服务器，只在圆上增加服务器的逆时针方向的第一台服务器上的键会受到影响。
+## Memcached线程管理
+MemCached默认有7个线程，4个主要的工作线程，3个辅助线程，线程可划分为以下4种：
+  - 主线程，负责MemCached服务器初始化，监听TCP、Unix Domain连接请求；
+  - 工作线程池，MemCached默认4个工作线程，可通过启动参数修改，负责处理TCP、UDP，Unix域套接口链路上的请求；
+  - assoc维护线程，MemCached内存中维护一张巨大的hash表，该线程负责hash表动态增长；
+  - slab维护线程，即内存管理模块维护线程，负责class中slab的平衡，MemCached启动选项中可关闭该线程。
 ## Memcached的访问模型
 ![avatar](./memcached访问模型.png)
  1. 应用程序输入需要写缓存的数据，例如Token；
  2. Memcache API输入路由算法模块，路由算法根据Key和Memcache集群服务列表得到一台服务器编号；
  3. 由服务器编号得到Memcache及对应的IP地址和端口号；
  4. API调用通信模块和指定编号的服务器通信，将数据写入该服务器，完成一次分布式缓存的写操作。
-## Memcached内存分配策略-slab 
-一个内存分配算法要考虑算法的效率，管理内存所占的空间和内存碎片的问题。
-slab能较好的规避内存碎片的问题，但也带来了一定的内存浪费，算法的效率还不错。
 ## 数据类型
   ### Redis支持String、List、Set、Sorted和Hash
   ### Memcache支持String
