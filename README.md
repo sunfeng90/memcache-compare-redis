@@ -157,6 +157,84 @@ MemCached默认有7个线程，4个主要的工作线程，3个辅助线程，�
       ```
   - 设置过期键以及获取过期键的值
   - 分布式
+      ```
+        const nMemecached = require('memcached');
+        let memcached;
+
+        memcached = new nMemecached(["127.0.0.1:11211", "127.0.0.1:11212", "127.0.0.1:11213"]);
+
+        memcached.set("mShopId", "3522", 100, (err, res) => {
+          console.log('是否设置成功:');
+          console.log(res);
+
+          memcached.get("mShopId", (err, res) => {
+           console.log('Get后的结果:');
+           console.log(res);
+
+           memcached.end();
+          });
+       });
+      ```
+### 其他命令
+     ```     
+       // 启动
+       1、-d 启动一个守护进程
+       2、-m 分配给Memcached的内存数量，单位为MB
+       3、-u 运行Memcached的用户
+       4、-l 监听的服务器IP地址，可以监听多个地址
+       5、-p 监听的端口，端口号建议大于1024
+       6、-c 最大并发连接数，默认1024
+       7、-P 保存Memcached的pid文件
+       8、-vv 显示调试信息
+       例如：memcached -d -m 64M -u root -l 127.0.0.1 -p 11211
+
+
+        // 查询实例信息
+        ### stats
+        STAT pid 11767 // 进程ID
+        STAT uptime 11745 // 服务器运行秒数
+        STAT time 1577182046 // 服务器当前unix时间戳
+        STAT version 1.5.16 // 服务器版本
+        STAT libevent 2.1.11-stable
+        STAT pointer_size 64
+        STAT rusage_user 0.939031
+        STAT rusage_system 0.656947
+        STAT max_connections 1024
+        STAT curr_connections 1
+        STAT total_connections 8
+        STAT rejected_connections 0
+        STAT connection_structures 3
+        STAT reserved_fds 20
+        STAT cmd_get 10 // 执行get命令总数
+        STAT cmd_set 6 // 执行set命令总数
+        STAT cmd_flush 0
+        STAT cmd_touch 0
+        STAT get_hits 7 // get命中次数
+        STAT get_misses 3 // get未命中次数
+        STAT get_expired 0
+        STAT get_flushed 0
+        STAT delete_misses 0
+        STAT delete_hits 0
+        STAT incr_misses 0
+        STAT incr_hits 0
+        STAT decr_misses 0
+        STAT decr_hits 0
+        STAT cas_misses 0
+        STAT cas_hits 0
+        STAT cas_badval 0
+        STAT touch_hits 0
+        STAT touch_misses 0
+        STAT auth_cmds 0
+        STAT auth_errors 0
+        STAT bytes_read 310
+        
+        // 清空统计数据
+        ### stats reset
+        
+        
+        // 清理缓存中的所有名称/值对
+        ### flush_all
+     ```
 ## 一些注意事项
   - Memcached单进程最大使用内存为2G；
   - 最大30天的数据过期时间，即使设置为永久过期，也会在这个时间过期；常量REALTIME_MAXDELTA为60 * 60 * 24 * 30控制；
